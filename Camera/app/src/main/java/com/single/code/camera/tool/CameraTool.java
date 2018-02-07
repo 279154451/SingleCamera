@@ -57,6 +57,9 @@ public class CameraTool implements MediaRecorder.OnErrorListener,SurfaceHolder.C
                     if(builder.mRecordMaxTime!=0&&(mTimeCount>=builder.mRecordMaxTime)){//到达指定时间，停止录制
                         stop(false);
                     }
+                    if(builder.maxFileSize>0&&(fileSize>=builder.maxFileSize)){//达到最大录制大小，停止录制
+                        stop(false);
+                    }
                     break;
             }
         }
@@ -314,18 +317,25 @@ public class CameraTool implements MediaRecorder.OnErrorListener,SurfaceHolder.C
             mMediaRecorder.setOnErrorListener(this);
             mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.DEFAULT);
             mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);// 视频源
-            if(builder.mRecordMaxTime!=0){
-                mMediaRecorder.setMaxDuration(builder.mRecordMaxTime*1000);
-            }
-            if(builder.maxFileSize!=0){
-                mMediaRecorder.setMaxFileSize(builder.maxFileSize);
-            }
-            mMediaRecorder.setOnInfoListener(new MediaRecorder.OnInfoListener() {
-                @Override
-                public void onInfo(MediaRecorder mr, int what, int extra) {
-                    Log.d("HooweCamera","what :"+what);
-                }
-            });
+//            设置最大录制时间和最大录制文件大小
+//            if(builder.mRecordMaxTime!=0){
+//                mMediaRecorder.setMaxDuration(builder.mRecordMaxTime*1000);
+//            }
+//            if(builder.maxFileSize!=0){
+//                mMediaRecorder.setMaxFileSize(builder.maxFileSize);
+//            }
+//            mMediaRecorder.setOnInfoListener(new MediaRecorder.OnInfoListener() {
+//                @Override
+//                public void onInfo(MediaRecorder mr, int what, int extra) {
+//                    Log.d("HooweCamera","what :"+what);
+//                    switch (what){
+//                        case MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED:
+//                        case MediaRecorder.MEDIA_RECORDER_INFO_MAX_FILESIZE_REACHED:
+//                            stop(false);
+//                            break;
+//                    }
+//                }
+//            });
             // Use the same size for recording profile.
             CamcorderProfile mProfile = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH);
             mProfile.videoFrameWidth = optimalSize.width;
