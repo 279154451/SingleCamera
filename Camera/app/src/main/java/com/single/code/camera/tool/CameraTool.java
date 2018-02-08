@@ -26,16 +26,18 @@ public class CameraTool implements MediaRecorder.OnErrorListener,SurfaceHolder.C
     TimerTask timerTask;
     private int mTimeCount;// 时间计数
     private MediaRecorder mMediaRecorder;// 录制视频的类
-    private Builder builder;
     private SurfaceHolder mSurfaceHolder;
     private Camera.Parameters parameters;
     private Camera.Size optimalSize;
-    private  File mVecordFile;//录制文件
+    private  File mRecordFile;//录制文件
     //摄像头默认是后置， 0：前置， 1：后置
     private int cameraPosition = 1;
     private RecordListener recordListener;
     private final static int TIMER_COUNT_CODE=0;
     private boolean isRecording = false;
+    private  int maxRecordTime =0;
+    private long maxRecordFileSize = 0;
+    private String mVideoFilePath;
     private Handler mHandler = new Handler(Looper.getMainLooper()){
         @Override
         public void handleMessage(Message msg) {
@@ -43,21 +45,21 @@ public class CameraTool implements MediaRecorder.OnErrorListener,SurfaceHolder.C
                 case TIMER_COUNT_CODE:
                     int mTimeCount = (int) msg.obj;
                     long fileSize = 0;
-                    if(mVecordFile!=null){
-                        fileSize = mVecordFile.length();
+                    if(mRecordFile!=null){
+                        fileSize = mRecordFile.length();
                         Log.d("HooweCamera","fileSize :"+fileSize);
                     }
                     int progress =0;
-                    if(builder.mRecordMaxTime!=0){
-                        progress = mTimeCount*100/builder.mRecordMaxTime;
+                    if(maxRecordTime!=0){
+                        progress = mTimeCount*100/maxRecordTime;
                     }
                     if(recordListener!=null){
                         recordListener.RecordProgress(mTimeCount,progress,fileSize);
                     }
-                    if(builder.mRecordMaxTime!=0&&(mTimeCount>=builder.mRecordMaxTime)){//到达指定时间，停止录制
+                    if(maxRecordTime!=0&&(mTimeCount>=maxRecordTime)){//到达指定时间，停止录制
                         stop(false);
                     }
-                    if(builder.maxFileSize>0&&(fileSize>=builder.maxFileSize)){//达到最大录制大小，停止录制
+                    if(maxRecordFileSize>0&&(fileSize>=maxRecordFileSize)){//达到最大录制大小，停止录制
                         stop(false);
                     }
                     break;
@@ -65,7 +67,8 @@ public class CameraTool implements MediaRecorder.OnErrorListener,SurfaceHolder.C
         }
     };
     private CameraTool(Builder builder,RecordListener recordListener){
-        this.builder = builder;
+        this.maxRecordTime = builder.mRecordMaxTime;
+        this.maxRecordFileSize = builder.maxFileSize;
         this.recordListener = recordListener;
         mSurfaceHolder = builder.surfaceView.getHolder();// 取得holder
         mSurfaceHolder.addCallback(this); // holder加入回调接口
@@ -116,7 +119,7 @@ public class CameraTool implements MediaRecorder.OnErrorListener,SurfaceHolder.C
     public void startRecord(String saveVideoPath){
         if(!isRecording){
             isRecording = true;
-            builder.setVideoFile(saveVideoPath);
+            mVideoFilePath = saveVideoPath;
             initTimer();
             initRecord();
             if(recordListener!=null){
@@ -178,7 +181,7 @@ public class CameraTool implements MediaRecorder.OnErrorListener,SurfaceHolder.C
             }
             releaseTimer();
             if(recordListener!=null){
-                recordListener.onRecordStop(mTimeCount,mVecordFile.getAbsolutePath());
+                recordListener.onRecordStop(mTimeCount,mRecordFile.getAbsolutePath());
             }
         }
         mTimeCount = 0;
@@ -217,8 +220,8 @@ public class CameraTool implements MediaRecorder.OnErrorListener,SurfaceHolder.C
                     e.printStackTrace();
                 }
             }
-            if(mVecordFile!=null&& mVecordFile.exists()){
-                mVecordFile.delete();
+            if(mRecordFile!=null&& mRecordFile.exists()){
+                mRecordFile.delete();
             }
             if(recordListener!=null){
                 recordListener.onRecordCancel();
@@ -344,8 +347,8 @@ public class CameraTool implements MediaRecorder.OnErrorListener,SurfaceHolder.C
             mMediaRecorder.setProfile(mProfile);
             //该设置是为了抽取视频的某些帧，真正录视频的时候，不要设置该参数
 //            mMediaRecorder.setCaptureRate(mFpsRange.get(0)[0]);//获取最小的每一秒录制的帧数
-            mVecordFile = new File(builder.mVideoFilePath);
-            mMediaRecorder.setOutputFile(mVecordFile.getAbsolutePath());
+            mRecordFile = new File(mVideoFilePath);
+            mMediaRecorder.setOutputFile(mRecordFile.getAbsolutePath());
 
             mMediaRecorder.prepare();
             mMediaRecorder.start();
