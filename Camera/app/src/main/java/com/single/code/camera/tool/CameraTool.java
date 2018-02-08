@@ -95,7 +95,7 @@ public class CameraTool implements MediaRecorder.OnErrorListener,SurfaceHolder.C
             List<Camera.Size> mSupportedPreviewSizes = parameters.getSupportedPreviewSizes();
             List<Camera.Size> mSupportedVideoSizes = parameters.getSupportedVideoSizes();
             optimalSize = CameraHelper.getOptimalVideoSize(mSupportedVideoSizes,
-                    mSupportedPreviewSizes, surfaceChangedHeight, surfaceChangedWidth);
+                    mSupportedPreviewSizes, surfaceChangedHeight, surfaceChangedWidth);//获取适合当前屏幕最适合的分辨率
 
             parameters.setPreviewSize(optimalSize.width, optimalSize.height); // 设置预览图像大小
 
